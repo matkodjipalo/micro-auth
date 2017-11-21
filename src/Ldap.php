@@ -27,7 +27,7 @@ class Ldap
     /**
      * Logger
      *
-     * @var Logger
+     * @var LoggerInterface
      */
     protected $logger;
 

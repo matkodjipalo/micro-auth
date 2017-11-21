@@ -16,7 +16,7 @@ use \Psr\Log\LoggerInterface as Logger;
 use \Micro\Auth\Adapter\AdapterInterface;
 use \Micro\Auth\Adapter\AbstractAdapter;
 
-abstract class AbstractBasic extends AbstractAdapter
+abstract class AbstractBasic extends AbstractAdapter implements BasicInterface
 {
     /**
      * Attributes
@@ -72,4 +72,10 @@ abstract class AbstractBasic extends AbstractAdapter
     {
         return $this->attributes;
     }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    //abstract public function plainAuth(string $username, string $password);
 }

@@ -39,7 +39,7 @@ class Auth implements AdapterAwareInterface
     /**
      * Logger
      *
-     * @var Logger
+     * @var LoggerInterface
      */
     protected $logger;
 

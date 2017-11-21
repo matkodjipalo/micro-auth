@@ -22,7 +22,8 @@
         "gyselroth/micro-container": "*"
     },
     "suggest": {
-        "ext-ldap": "required if you want to use \\Micro\\Ldap"
+        "ext-ldap": "required if you want to use LDAP",
+        "ext-apc": "Caching openid-connect discovery sheets"
     },
     "require-dev": {
         "phpunit/phpunit": "5.7.*",

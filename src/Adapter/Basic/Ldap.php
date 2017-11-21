@@ -13,7 +13,7 @@ namespace Micro\Auth\Adapter\Basic;
 
 use \Micro\Auth\Exception;
 use \Psr\Log\LoggerInterface;
-use \Micro\Ldap as LdapServer;
+use \Micro\Auth\Ldap as LdapServer;
 use \Micro\Auth\Adapter\AdapterInterface;
 use \Micro\Auth\Adapter\AbstractAdapter;
 
@@ -85,7 +85,7 @@ class Ldap extends AbstractBasic
      * @param   string $password
      * @return  bool
      */
-    protected function plainAuth(string $username, string $password): bool
+    public function plainAuth(string $username, string $password): bool
     {
         $this->ldap->connect();
         $resource = $this->ldap->getResource();
