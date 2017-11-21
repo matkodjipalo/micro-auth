@@ -19,7 +19,7 @@
     "require": {
         "php": ">=7.1",
         "psr/log": "1.*",
-        "gyselroth/micro-container": "*",
+        "gyselroth/micro-container": "*"
     },
     "suggest": {
         "ext-ldap": "required if you want to use \\Micro\\Ldap"
