@@ -1,8 +1,8 @@
 {
-    "name": "gyselroth/micro",
+    "name": "gyselroth/micro-auth",
     "description": "Authentication implementation including support for LDAP and OpenID-connet",
     "keywords": ["micro", "ldap", "http-basic", "openid-connect"],
-    "homepage": "http://www.github.com/gyselroth/micro",
+    "homepage": "http://www.github.com/gyselroth/micro-auth",
     "license": "MIT",
     "authors": [
         {
