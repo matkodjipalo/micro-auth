@@ -1,0 +1,32 @@
+{
+    "name": "gyselroth/micro",
+    "description": "Authentication implementation including support for LDAP and OpenID-connet",
+    "keywords": ["micro", "ldap", "http-basic", "openid-connect"],
+    "homepage": "http://www.github.com/gyselroth/micro",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Raffael Sahli",
+            "email": "sahli@gyselroth.net"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Micro\\Auth\\": "src",
+            "Micro\\Auth\\Testsuite\\": "tests"
+        }
+    },
+    "require": {
+        "php": ">=7.1",
+        "psr/log": "1.*",
+        "gyselroth/micro-container": "*",
+    },
+    "suggest": {
+        "ext-ldap": "required if you want to use \\Micro\\Ldap"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "5.7.*",
+        "friendsofphp/php-cs-fixer": "*",
+        "phpstan/phpstan": "^0.8.5"
+    }
+}
