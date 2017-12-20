@@ -1,12 +1,13 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 /**
  * Micro
  *
- * @author    Raffael Sahli <sahli@gyselroth.net>
- * @copyright Copyright (c) 2017 gyselroth GmbH (https://gyselroth.com)
- * @license   MIT https://opensource.org/licenses/MIT
+ * @author      Raffael Sahli <sahli@gyselroth.net>
+ * @copyright   Copryright (c) 2015-2017 gyselroth GmbH (https://gyselroth.com)
+ * @license     MIT https://opensource.org/licenses/MIT
  */
 
 namespace Micro\Auth\Adapter;
@@ -14,39 +15,35 @@ namespace Micro\Auth\Adapter;
 interface AdapterInterface
 {
     /**
-     * Get attribute sync cache
+     * Get attribute sync cache.
      *
      * @return int
      */
     public function getAttributeSyncCache(): int;
 
-
     /**
-     * Authenticate
+     * Authenticate.
      *
-     * @return  bool
+     * @return bool
      */
     public function authenticate(): bool;
 
-
     /**
-     * Get unqiue identity name
+     * Get unqiue identity name.
      *
      * @return string
      */
     public function getIdentifier(): string;
 
-
     /**
-     * Get attribute map
+     * Get attribute map.
      *
-     * @return Iterable
+     * @return iterable
      */
     public function getAttributeMap(): Iterable;
 
-
     /**
-     * Get identity attributes
+     * Get identity attributes.
      *
      * @return array
      */

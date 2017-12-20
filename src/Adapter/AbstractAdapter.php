@@ -1,56 +1,52 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 /**
  * Micro
  *
  * @author      Raffael Sahli <sahli@gyselroth.net>
- * @copyright   Copryright (c) 2017 gyselroth GmbH (https://gyselroth.com)
+ * @copyright   Copryright (c) 2015-2017 gyselroth GmbH (https://gyselroth.com)
  * @license     MIT https://opensource.org/licenses/MIT
  */
 
 namespace Micro\Auth\Adapter;
 
-use \Psr\Log\LoggerInterface as Logger;
-use \Micro\Auth\Adapter\AdapterInterface;
-use \Micro\Auth\Exception;
+use Micro\Auth\Exception;
+use Psr\Log\LoggerInterface as Logger;
 
 abstract class AbstractAdapter implements AdapterInterface
 {
     /**
-     * Identity
+     * Identity.
      *
      * @var string
      */
     protected $identifier;
 
-
     /**
-     * attribute sync cache
+     * attribute sync cache.
      *
      * @var int
      */
     protected $attr_sync_cache = 0;
 
-
     /**
-     * attribute map
+     * attribute map.
      *
-     * @var Iterable
+     * @var iterable
      */
     protected $map = [];
 
-
     /**
-     * Logger
+     * Logger.
      *
      * @var Logger
      */
     protected $logger;
 
-
     /**
-     * Get attribute sync cache
+     * Get attribute sync cache.
      *
      * @return int
      */
@@ -59,16 +55,16 @@ abstract class AbstractAdapter implements AdapterInterface
         return $this->attr_sync_cache;
     }
 
-
     /**
-     * Set options
+     * Set options.
      *
-     * @param   Iterable $config
-     * @return  AdapterInterface
+     * @param iterable $config
+     *
+     * @return AdapterInterface
      */
-    public function setOptions(? Iterable $config = null) : AdapterInterface
+    public function setOptions(? Iterable $config = null): AdapterInterface
     {
-        if ($config === null) {
+        if (null === $config) {
             return $this;
         }
 
@@ -76,12 +72,12 @@ abstract class AbstractAdapter implements AdapterInterface
             switch ($option) {
                 case 'map':
                     $this->map = $value;
-                break;
 
+                break;
                 case 'attr_sync_cache':
-                    $this->attr_sync_cache = (int)$value;
-                break;
+                    $this->attr_sync_cache = (int) $value;
 
+                break;
                 default:
                     throw new Exception('unknown option '.$option.' given');
             }
@@ -90,9 +86,8 @@ abstract class AbstractAdapter implements AdapterInterface
         return $this;
     }
 
-
     /**
-     * Get identifier
+     * Get identifier.
      *
      * @return string
      */
@@ -101,11 +96,10 @@ abstract class AbstractAdapter implements AdapterInterface
         return $this->identifier;
     }
 
-
     /**
-     * Get attribute map
+     * Get attribute map.
      *
-     * @return Iterable
+     * @return iterable
      */
     public function getAttributeMap(): Iterable
     {

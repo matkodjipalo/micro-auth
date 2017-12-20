@@ -1,64 +1,58 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 /**
  * Micro
  *
- * @author    Raffael Sahli <sahli@gyselroth.net>
- * @copyright Copyright (c) 2017 gyselroth GmbH (https://gyselroth.com)
- * @license   MIT https://opensource.org/licenses/MIT
+ * @author      Raffael Sahli <sahli@gyselroth.net>
+ * @copyright   Copryright (c) 2015-2017 gyselroth GmbH (https://gyselroth.com)
+ * @license     MIT https://opensource.org/licenses/MIT
  */
 
 namespace Micro\Auth;
 
-use \Micro\Auth\Exception;
-use \Micro\Auth\Adapter\AdapterInterface;
-use \Psr\Log\LoggerInterface as Logger;
+use Micro\Auth\Adapter\AdapterInterface;
+use Psr\Log\LoggerInterface as Logger;
 
 class Identity
 {
     /**
-     * Attribute map
+     * Logger.
+     *
+     * @var Logger
+     */
+    protected $logger;
+    /**
+     * Attribute map.
      *
      * @var AttributeMap
      */
     private $attribute_map;
 
-
     /**
-     * Auth adapter
+     * Auth adapter.
      *
      * @var AdapterInterface
      */
     private $adapter;
 
-
     /**
-     * Logger
+     * Initialize.
      *
-     * @var Logger
-     */
-    protected $logger;
-
-
-    /**
-     * Initialize
-     *
-     * @param   AdapterInterface $adapter
-     * @param   AttributeMap $map
-     * @param   Logger $logger
-     * @return  void
+     * @param AdapterInterface $adapter
+     * @param AttributeMap     $map
+     * @param Logger           $logger
      */
     public function __construct(AdapterInterface $adapter, AttributeMap $map, Logger $logger)
     {
         $this->attribute_map = $map;
-        $this->logger        = $logger;
-        $this->adapter       = $adapter;
+        $this->logger = $logger;
+        $this->adapter = $adapter;
     }
 
-
     /**
-     * Get attribute map
+     * Get attribute map.
      *
      * @return AttributeMap
      */
@@ -67,9 +61,8 @@ class Identity
         return $this->attribute_map;
     }
 
-
     /**
-     * Get adapter
+     * Get adapter.
      *
      * @return AdapterInterface
      */
@@ -78,9 +71,8 @@ class Identity
         return $this->adapter;
     }
 
-
     /**
-     * Get identity
+     * Get identity.
      *
      * @return string
      */
@@ -89,9 +81,8 @@ class Identity
         return $this->adapter->getIdentifier();
     }
 
-
     /**
-     * Get identity attributes
+     * Get identity attributes.
      *
      * @return array
      */

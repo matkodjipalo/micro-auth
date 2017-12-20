@@ -1,117 +1,110 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 /**
  * Micro
  *
- * @author    Raffael Sahli <sahli@gyselroth.net>
- * @copyright Copyright (c) 2017 gyselroth GmbH (https://gyselroth.com)
- * @license   MIT https://opensource.org/licenses/MIT
+ * @author      Raffael Sahli <sahli@gyselroth.net>
+ * @copyright   Copryright (c) 2015-2017 gyselroth GmbH (https://gyselroth.com)
+ * @license     MIT https://opensource.org/licenses/MIT
  */
 
 namespace Micro\Auth;
 
-use \Micro\Auth\Ldap\Exception;
-use \Psr\Log\LoggerInterface;
+use Micro\Auth\Ldap\Exception;
+use Psr\Log\LoggerInterface;
 
 class Ldap
 {
     /**
-     * Connection resource
+     * Connection resource.
      *
      * @var resource
      */
     protected $connection;
 
-
     /**
-     * Logger
+     * Logger.
      *
      * @var LoggerInterface
      */
     protected $logger;
 
-
     /**
-     * URI
+     * URI.
      *
      * @var string
      */
     protected $uri = 'ldap://127.0.0.1:389';
 
-
     /**
-     * Binddn
+     * Binddn.
      *
      * @var string
      */
     protected $binddn;
 
-
     /**
-     * Bindpw
+     * Bindpw.
      *
      * @var string
      */
     protected $bindpw;
 
-
     /**
-     * Basedn
+     * Basedn.
      *
      * @var string
      */
     protected $basedn = '';
 
-
     /**
-     * tls
+     * tls.
      *
      * @var bool
      */
     protected $tls = false;
 
-
     /**
-     *  Options
+     *  Options.
      *
      * @var array
      */
     protected $options = [];
 
-
     /**
-     * construct
+     * construct.
      *
-     * @param   Iterable $config
-     * @param   Logger $logger
-     * @return  resource
+     * @param iterable $config
+     * @param Logger   $logger
+     *
+     * @return resource
      */
-    public function __construct(LoggerInterface $logger, ?Iterable $config=null)
+    public function __construct(LoggerInterface $logger, ?Iterable $config = null)
     {
         $this->setOptions($config);
         $this->logger = $logger;
     }
 
-
     /**
-     * Connect
+     * Connect.
      *
      * @return Ldap
      */
-    public function connect(): Ldap
+    public function connect(): self
     {
         $this->logger->debug('connect to ldap server ['.$this->uri.']', [
             'category' => get_class($this),
         ]);
 
-        if ($this->binddn === null) {
+        if (null === $this->binddn) {
             $this->logger->warning('no binddn set for ldap connection, you should avoid anonymous bind', [
                 'category' => get_class($this),
             ]);
         }
 
-        if ($this->tls === false && substr($this->uri, 0, 5) !== 'ldaps') {
+        if (false === $this->tls && 'ldaps' !== substr($this->uri, 0, 5)) {
             $this->logger->warning('neither tls nor ldaps enabled for ldap connection, it is strongly reccommended to encrypt ldap connections', [
                 'category' => get_class($this),
             ]);
@@ -119,7 +112,7 @@ class Ldap
 
         $this->connection = ldap_connect($this->uri);
 
-        if ($this->tls === true) {
+        if (true === $this->tls) {
             ldap_start_tls($this->connection);
         }
 
@@ -128,7 +121,7 @@ class Ldap
         }
 
         if ($this->connection) {
-            if ($this->binddn !== null) {
+            if (null !== $this->binddn) {
                 $bind = ldap_bind($this->connection, $this->binddn, $this->bindpw);
 
                 if ($bind) {
@@ -137,9 +130,9 @@ class Ldap
                     ]);
 
                     return $this;
-                } else {
-                    throw new Exception('failed bind to ldap server, error: '.ldap_error($this->connection));
                 }
+
+                throw new Exception('failed bind to ldap server, error: '.ldap_error($this->connection));
             }
         } else {
             throw new Exception('failed connect to ldap server '.$this->uri);
@@ -148,9 +141,8 @@ class Ldap
         return $this;
     }
 
-
     /**
-     * Close socket
+     * Close socket.
      *
      * @return bool
      */
@@ -163,38 +155,44 @@ class Ldap
         return true;
     }
 
-
     /**
-     * Set options
+     * Set options.
      *
-     * @param  Iterable $config
+     * @param iterable $config
+     *
      * @return Ldap
      */
-    public function setOptions(? Iterable $config = null) : Ldap
+    public function setOptions(? Iterable $config = null): self
     {
-        if ($config === null) {
+        if (null === $config) {
             return $this;
         }
 
         foreach ($config as $option => $value) {
             switch ($option) {
                 case 'uri':
-                    $this->uri = (string)$value;
+                    $this->uri = (string) $value;
+
                     break;
                 case 'options':
                     $this->options = $value;
+
                     break;
                 case 'binddn':
-                    $this->binddn = (string)$value;
+                    $this->binddn = (string) $value;
+
                     break;
                 case 'bindpw':
-                    $this->bindpw = (string)$value;
+                    $this->bindpw = (string) $value;
+
                     break;
                 case 'basedn':
-                    $this->basedn = (string)$value;
+                    $this->basedn = (string) $value;
+
                     break;
                 case 'tls':
-                    $this->tls = (bool)(int)$value;
+                    $this->tls = (bool) (int) $value;
+
                     break;
                 default:
                     throw new Exception('unknown option '.$option.' given');
@@ -204,9 +202,8 @@ class Ldap
         return $this;
     }
 
-
     /**
-     * Get base
+     * Get base.
      *
      * @return string
      */
@@ -215,9 +212,8 @@ class Ldap
         return $this->basedn;
     }
 
-
     /**
-     * Get connection
+     * Get connection.
      *
      * @return resource
      */

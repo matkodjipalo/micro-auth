@@ -1,65 +1,62 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 /**
  * Micro
  *
- * @author    Raffael Sahli <sahli@gyselroth.net>
- * @copyright Copyright (c) 2017 gyselroth GmbH (https://gyselroth.com)
- * @license   MIT https://opensource.org/licenses/MIT
+ * @author      Raffael Sahli <sahli@gyselroth.net>
+ * @copyright   Copryright (c) 2015-2017 gyselroth GmbH (https://gyselroth.com)
+ * @license     MIT https://opensource.org/licenses/MIT
  */
 
 namespace Micro\Auth;
 
-use \Psr\Log\LoggerInterface as Logger;
+use Psr\Log\LoggerInterface as Logger;
 
 class AttributeMap
 {
     /**
-     * Attribute map
+     * Attribute map.
      *
-     * @var Iterable
+     * @var iterable
      */
     protected $map = [];
 
-
     /**
-     * Logger
+     * Logger.
      *
      * @var Logger
      */
     protected $logger;
 
-
     /**
-     * Initialize
+     * Initialize.
      *
-     * @param   Iterable $map
-     * @param   Logger $logger
-     * @return  void
+     * @param iterable $map
+     * @param Logger   $logger
      */
     public function __construct(Iterable $map, Logger $logger)
     {
-        $this->logger  = $logger;
-        $this->map     = $map;
+        $this->logger = $logger;
+        $this->map = $map;
     }
 
-
     /**
-     * Get attribute map
+     * Get attribute map.
      *
-     * @return Iterable
+     * @return iterable
      */
     public function getAttributeMap(): Iterable
     {
         return $this->map;
     }
 
-
     /**
-     * Prepare attributes
+     * Prepare attributes.
      *
-     * @param  array $data
+     * @param array $data
+     *
      * @return array
      */
     public function map(array $data): array
@@ -71,7 +68,7 @@ class AttributeMap
                     'category' => get_class($this),
                 ]);
 
-                if ($value['type'] == 'array') {
+                if ('array' === $value['type']) {
                     $store = $data[$value['attr']];
                 } else {
                     $store = $data[$value['attr']];
@@ -82,27 +79,28 @@ class AttributeMap
 
                 switch ($value['type']) {
                     case 'array':
-                        $arr =  (array)$data[$value['attr']];
+                        $arr = (array) $data[$value['attr']];
                         unset($arr['count']);
                         $attrs[$attr] = $arr;
+
                     break;
-                        
                     case 'string':
-                         $attrs[$attr] = (string)$store;
+                         $attrs[$attr] = (string) $store;
+
                     break;
-                                            
                     case 'int':
-                         $attrs[$attr] = (int)$store;
+                         $attrs[$attr] = (int) $store;
+
                     break;
-                                            
                     case 'bool':
-                         $attrs[$attr] = (bool)$store;
+                         $attrs[$attr] = (bool) $store;
+
                     break;
-                    
                     default:
                         $this->logger->error('unknown attribute type ['.$value['type'].'] for attribute ['.$attr.']; use one of [array,string,int,bool]', [
                             'category' => get_class($this),
                         ]);
+
                     break;
                 }
             } else {

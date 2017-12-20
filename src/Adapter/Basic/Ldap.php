@@ -1,65 +1,61 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 /**
  * Micro
  *
  * @author      Raffael Sahli <sahli@gyselroth.net>
- * @copyright   Copryright (c) 2017 gyselroth GmbH (https://gyselroth.com)
+ * @copyright   Copryright (c) 2015-2017 gyselroth GmbH (https://gyselroth.com)
  * @license     MIT https://opensource.org/licenses/MIT
  */
 
 namespace Micro\Auth\Adapter\Basic;
 
-use \Micro\Auth\Exception;
-use \Psr\Log\LoggerInterface;
-use \Micro\Auth\Ldap as LdapServer;
-use \Micro\Auth\Adapter\AdapterInterface;
-use \Micro\Auth\Adapter\AbstractAdapter;
+use Micro\Auth\Adapter\AdapterInterface;
+use Micro\Auth\Ldap as LdapServer;
+use Psr\Log\LoggerInterface;
 
 class Ldap extends AbstractBasic
 {
     /**
-     * Ldap
+     * Ldap.
      *
      * @var LdapServer
      */
     protected $ldap;
 
-
     /**
-     * LDAP DN
+     * LDAP DN.
      *
      * @var string
      */
     protected $ldap_dn;
 
-
     /**
-     * my account filter
+     * my account filter.
      *
      * @var string
      */
     protected $account_filter = '(uid=%s)';
 
-
-    public function __construct(LdapServer $ldap, LoggerInterface $logger, ?Iterable $config=null)
+    public function __construct(LdapServer $ldap, LoggerInterface $logger, ?Iterable $config = null)
     {
         $this->logger = $logger;
         $this->ldap = $ldap;
         $this->setOptions($config);
     }
 
-
     /**
-     * Set options
+     * Set options.
      *
-     * @param   Iterable $config
-     * @return  AdapterInterface
+     * @param iterable $config
+     *
+     * @return AdapterInterface
      */
-    public function setOptions(? Iterable $config = null) : AdapterInterface
+    public function setOptions(? Iterable $config = null): AdapterInterface
     {
-        if ($config === null) {
+        if (null === $config) {
             return $this;
         }
 
@@ -68,6 +64,7 @@ class Ldap extends AbstractBasic
                 case 'account_filter':
                     $this->account_filter = $value;
                     unset($config[$option]);
+
                 break;
             }
         }
@@ -77,13 +74,13 @@ class Ldap extends AbstractBasic
         return $this;
     }
 
-
     /**
-     * LDAP Auth
+     * LDAP Auth.
      *
-     * @param   string $username
-     * @param   string $password
-     * @return  bool
+     * @param string $username
+     * @param string $password
+     *
+     * @return bool
      */
     public function plainAuth(string $username, string $password): bool
     {
@@ -91,19 +88,20 @@ class Ldap extends AbstractBasic
         $resource = $this->ldap->getResource();
 
         $esc_username = ldap_escape($username);
-        $filter       = htmlspecialchars_decode(sprintf($this->account_filter, $esc_username));
-        $result       = ldap_search($resource, $this->ldap->getBase(), $filter, ['dn']);
-        $entries      = ldap_get_entries($resource, $result);
+        $filter = htmlspecialchars_decode(sprintf($this->account_filter, $esc_username));
+        $result = ldap_search($resource, $this->ldap->getBase(), $filter, ['dn']);
+        $entries = ldap_get_entries($resource, $result);
 
-        if ($entries['count'] === 0) {
+        if (0 === $entries['count']) {
             $this->logger->warning("user not found with ldap filter [{$filter}]", [
-                'category' => get_class($this)
+                'category' => get_class($this),
             ]);
 
             return false;
-        } elseif ($entries['count'] > 1) {
+        }
+        if ($entries['count'] > 1) {
             $this->logger->warning("more than one user found with ldap filter [{$filter}]", [
-                'category' => get_class($this)
+                'category' => get_class($this),
             ]);
 
             return false;
@@ -111,28 +109,27 @@ class Ldap extends AbstractBasic
 
         $dn = $entries[0]['dn'];
         $this->logger->info("found ldap user [{$dn}] with filter [{$filter}]", [
-            'category' => get_class($this)
+            'category' => get_class($this),
         ]);
 
         $result = ldap_bind($resource, $dn, $password);
         $this->logger->info("bind ldap user [{$dn}]", [
             'category' => get_class($this),
-            'result'   => $result
+            'result' => $result,
         ]);
 
-        if ($result === false) {
+        if (false === $result) {
             return false;
         }
 
-        $this->identifier  = $username;
-        $this->ldap_dn     = $dn;
+        $this->identifier = $username;
+        $this->ldap_dn = $dn;
 
         return true;
     }
 
-
     /**
-     * Get attributes
+     * Get attributes.
      *
      * @return array
      */
@@ -143,13 +140,13 @@ class Ldap extends AbstractBasic
             $search[] = $value['attr'];
         }
 
-        $result     = ldap_read($this->ldap->getResource(), $this->ldap_dn, '(objectClass=*)', $search);
-        $entries    = ldap_get_entries($this->ldap->getResource(), $result);
+        $result = ldap_read($this->ldap->getResource(), $this->ldap_dn, '(objectClass=*)', $search);
+        $entries = ldap_get_entries($this->ldap->getResource(), $result);
         $attributes = $entries[0];
 
         $this->logger->info("get ldap user [{$this->ldap_dn}] attributes", [
             'category' => get_class($this),
-            'params'   => $attributes,
+            'params' => $attributes,
         ]);
 
         return $attributes;
