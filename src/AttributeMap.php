@@ -3,18 +3,17 @@
 declare(strict_types=1);
 
 /**
- * Micro
+ * balloon
  *
- * @author      Raffael Sahli <sahli@gyselroth.net>
- * @copyright   Copryright (c) 2015-2017 gyselroth GmbH (https://gyselroth.com)
- * @license     MIT https://opensource.org/licenses/MIT
+ * @copyright   Copryright (c) 2012-2018 gyselroth GmbH (https://gyselroth.com)
+ * @license     GPL-3.0 https://opensource.org/licenses/GPL-3.0
  */
 
 namespace Micro\Auth;
 
 use Psr\Log\LoggerInterface as Logger;
 
-class AttributeMap
+class AttributeMap implements AttributeMapInterface
 {
     /**
      * Attribute map.
@@ -43,9 +42,7 @@ class AttributeMap
     }
 
     /**
-     * Get attribute map.
-     *
-     * @return iterable
+     * {@inheritDoc}
      */
     public function getAttributeMap(): Iterable
     {
@@ -53,11 +50,7 @@ class AttributeMap
     }
 
     /**
-     * Prepare attributes.
-     *
-     * @param array $data
-     *
-     * @return array
+     * {@inheritDoc}
      */
     public function map(array $data): array
     {

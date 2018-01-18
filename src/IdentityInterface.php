@@ -9,37 +9,33 @@ declare(strict_types=1);
  * @license     GPL-3.0 https://opensource.org/licenses/GPL-3.0
  */
 
-namespace Micro\Auth\Adapter;
+namespace Micro\Auth;
 
-interface AdapterInterface
+use Micro\Auth\Adapter\AdapterInterface;
+use Psr\Log\LoggerInterface as Logger;
+
+interface IdentityInterface
 {
     /**
-     * Get attribute sync cache.
+     * Get attribute map.
      *
-     * @return int
+     * @return AttributeMap
      */
-    public function getAttributeSyncCache(): int;
+    public function getAttributeMap(): AttributeMapInterface;
 
     /**
-     * Authenticate.
+     * Get adapter.
      *
-     * @return bool
+     * @return AdapterInterface
      */
-    public function authenticate(): bool;
+    public function getAdapter(): AdapterInterface;
 
     /**
-     * Get unqiue identity name.
+     * Get identity.
      *
      * @return string
      */
     public function getIdentifier(): string;
-
-    /**
-     * Get attribute map.
-     *
-     * @return iterable
-     */
-    public function getAttributeMap(): Iterable;
 
     /**
      * Get identity attributes.

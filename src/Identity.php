@@ -3,11 +3,10 @@
 declare(strict_types=1);
 
 /**
- * Micro
+ * balloon
  *
- * @author      Raffael Sahli <sahli@gyselroth.net>
- * @copyright   Copryright (c) 2015-2017 gyselroth GmbH (https://gyselroth.com)
- * @license     MIT https://opensource.org/licenses/MIT
+ * @copyright   Copryright (c) 2012-2018 gyselroth GmbH (https://gyselroth.com)
+ * @license     GPL-3.0 https://opensource.org/licenses/GPL-3.0
  */
 
 namespace Micro\Auth;
@@ -15,7 +14,7 @@ namespace Micro\Auth;
 use Micro\Auth\Adapter\AdapterInterface;
 use Psr\Log\LoggerInterface as Logger;
 
-class Identity
+class Identity implements IdentityInterface
 {
     /**
      * Logger.
@@ -23,19 +22,20 @@ class Identity
      * @var Logger
      */
     protected $logger;
+
     /**
      * Attribute map.
      *
      * @var AttributeMap
      */
-    private $attribute_map;
+    protected $attribute_map;
 
     /**
      * Auth adapter.
      *
      * @var AdapterInterface
      */
-    private $adapter;
+    protected $adapter;
 
     /**
      * Initialize.
@@ -52,19 +52,15 @@ class Identity
     }
 
     /**
-     * Get attribute map.
-     *
-     * @return AttributeMap
+     * {@inheritDoc}
      */
-    public function getAttributeMap(): AttributeMap
+    public function getAttributeMap(): AttributeMapInterface
     {
         return $this->attribute_map;
     }
 
     /**
-     * Get adapter.
-     *
-     * @return AdapterInterface
+     * {@inheritDoc}
      */
     public function getAdapter(): AdapterInterface
     {
@@ -72,9 +68,7 @@ class Identity
     }
 
     /**
-     * Get identity.
-     *
-     * @return string
+     * {@inheritDoc}
      */
     public function getIdentifier(): string
     {
@@ -82,9 +76,7 @@ class Identity
     }
 
     /**
-     * Get identity attributes.
-     *
-     * @return array
+     * {@inheritDoc}
      */
     public function getAttributes(): array
     {

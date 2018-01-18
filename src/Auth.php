@@ -3,11 +3,10 @@
 declare(strict_types=1);
 
 /**
- * Micro
+ * balloon
  *
- * @author      Raffael Sahli <sahli@gyselroth.net>
- * @copyright   Copryright (c) 2015-2017 gyselroth GmbH (https://gyselroth.com)
- * @license     MIT https://opensource.org/licenses/MIT
+ * @copyright   Copryright (c) 2012-2018 gyselroth GmbH (https://gyselroth.com)
+ * @license     GPL-3.0 https://opensource.org/licenses/GPL-3.0
  */
 
 namespace Micro\Auth;
@@ -28,7 +27,7 @@ class Auth implements AdapterAwareInterface
     /**
      * Identity.
      *
-     * @var Identity
+     * @var IdentityInterface
      */
     protected $identity;
 
@@ -215,9 +214,9 @@ class Auth implements AdapterAwareInterface
     /**
      * Get identity.
      *
-     * @return Identity
+     * @return IdentityInterface
      */
-    public function getIdentity(): Identity
+    public function getIdentity(): IdentityInterface
     {
         if (!$this->isAuthenticated()) {
             throw new Exception('no valid authentication yet');
@@ -241,9 +240,9 @@ class Auth implements AdapterAwareInterface
      *
      * @param AdapterInterface $adapter
      *
-     * @return Identity
+     * @return IdentityInterface
      */
-    protected function createIdentity(AdapterInterface $adapter): Identity
+    protected function createIdentity(AdapterInterface $adapter): IdentityInterface
     {
         $map = new $this->attribute_map_class($adapter->getAttributeMap(), $this->logger);
         $this->identity = new $this->identity_class($adapter, $map, $this->logger);
