@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 /**
- * balloon
+ * Micro
  *
- * @copyright   Copryright (c) 2012-2018 gyselroth GmbH (https://gyselroth.com)
- * @license     GPL-3.0 https://opensource.org/licenses/GPL-3.0
+ * @copyright   Copryright (c) 2015-2018 gyselroth GmbH (https://gyselroth.com)
+ * @license     MIT https://opensource.org/licenses/MIT
  */
 
 namespace Micro\Auth;
@@ -111,12 +111,12 @@ class Ldap
 
         $this->connection = ldap_connect($this->uri);
 
-        if (true === $this->tls) {
-            ldap_start_tls($this->connection);
+        foreach ($this->options as $opt => $value) {
+            ldap_set_option($this->connection, constant($opt), $value);
         }
 
-        foreach ($this->options as $opt => $value) {
-            ldap_set_option($this->connection, constant($value['attr']), $value['value']);
+        if (true === $this->tls) {
+            ldap_start_tls($this->connection);
         }
 
         if ($this->connection) {
@@ -169,28 +169,19 @@ class Ldap
 
         foreach ($config as $option => $value) {
             switch ($option) {
-                case 'uri':
-                    $this->uri = (string) $value;
-
-                    break;
                 case 'options':
                     $this->options = $value;
 
                     break;
+                case 'uri':
                 case 'binddn':
-                    $this->binddn = (string) $value;
-
-                    break;
                 case 'bindpw':
-                    $this->bindpw = (string) $value;
-
-                    break;
                 case 'basedn':
-                    $this->basedn = (string) $value;
+                    $this->{$option} = (string) $value;
 
                     break;
                 case 'tls':
-                    $this->tls = (bool) (int) $value;
+                    $this->tls = (bool) $value;
 
                     break;
                 default:

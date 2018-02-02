@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 /**
- * balloon
+ * Micro
  *
- * @copyright   Copryright (c) 2012-2018 gyselroth GmbH (https://gyselroth.com)
- * @license     GPL-3.0 https://opensource.org/licenses/GPL-3.0
+ * @copyright   Copryright (c) 2015-2018 gyselroth GmbH (https://gyselroth.com)
+ * @license     MIT https://opensource.org/licenses/MIT
  */
 
 namespace Micro\Auth;
@@ -52,7 +52,7 @@ class Identity implements IdentityInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAttributeMap(): AttributeMapInterface
     {
@@ -60,7 +60,7 @@ class Identity implements IdentityInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAdapter(): AdapterInterface
     {
@@ -68,7 +68,7 @@ class Identity implements IdentityInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getIdentifier(): string
     {
@@ -76,7 +76,7 @@ class Identity implements IdentityInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAttributes(): array
     {

@@ -3,22 +3,32 @@
 declare(strict_types=1);
 
 /**
- * balloon
+ * Micro
  *
- * @copyright   Copryright (c) 2012-2018 gyselroth GmbH (https://gyselroth.com)
- * @license     GPL-3.0 https://opensource.org/licenses/GPL-3.0
+ * @copyright   Copryright (c) 2015-2018 gyselroth GmbH (https://gyselroth.com)
+ * @license     MIT https://opensource.org/licenses/MIT
  */
 
 namespace Micro\Auth;
+
+use Closure;
 
 interface AttributeMapInterface
 {
     /**
      * Get attribute map.
      *
-     * @return Iterable
+     * @return iterable
      */
     public function getAttributeMap(): Iterable;
+
+    /**
+     * Add custom mapper.
+     *
+     * @param string  $type
+     * @param Closure $closure
+     */
+    public function addMapper(string $type, Closure $closure): self;
 
     /**
      * Prepare attributes.

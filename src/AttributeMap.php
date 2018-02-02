@@ -3,14 +3,15 @@
 declare(strict_types=1);
 
 /**
- * balloon
+ * Micro
  *
- * @copyright   Copryright (c) 2012-2018 gyselroth GmbH (https://gyselroth.com)
- * @license     GPL-3.0 https://opensource.org/licenses/GPL-3.0
+ * @copyright   Copryright (c) 2015-2018 gyselroth GmbH (https://gyselroth.com)
+ * @license     MIT https://opensource.org/licenses/MIT
  */
 
 namespace Micro\Auth;
 
+use Closure;
 use Psr\Log\LoggerInterface as Logger;
 
 class AttributeMap implements AttributeMapInterface
@@ -30,6 +31,13 @@ class AttributeMap implements AttributeMapInterface
     protected $logger;
 
     /**
+     * Custom mapper.
+     *
+     * @var array
+     */
+    protected $mapper = [];
+
+    /**
      * Initialize.
      *
      * @param iterable $map
@@ -42,7 +50,7 @@ class AttributeMap implements AttributeMapInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAttributeMap(): Iterable
     {
@@ -50,7 +58,17 @@ class AttributeMap implements AttributeMapInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     */
+    public function addMapper(string $type, Closure $closure): AttributeMapInterface
+    {
+        $this->mapper[$type] = $closure;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function map(array $data): array
     {
@@ -68,6 +86,10 @@ class AttributeMap implements AttributeMapInterface
                     if (is_array($store)) {
                         $store = $store[0];
                     }
+                }
+
+                if (isset($this->mapper[$value['type']])) {
+                    $attrs[$attr] = $this->mapper[$value['type']]->call($this, $store);
                 }
 
                 switch ($value['type']) {
