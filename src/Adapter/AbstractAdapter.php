@@ -11,8 +11,7 @@ declare(strict_types=1);
 
 namespace Micro\Auth\Adapter;
 
-use Micro\Auth\Exception;
-use Psr\Log\LoggerInterface as Logger;
+use InvalidArgumentException;
 
 abstract class AbstractAdapter implements AdapterInterface
 {
@@ -38,11 +37,11 @@ abstract class AbstractAdapter implements AdapterInterface
     protected $map = [];
 
     /**
-     * Logger.
+     * Identity attribute.
      *
-     * @var Logger
+     * @var string
      */
-    protected $logger;
+    protected $identity_attribute = 'uid';
 
     /**
      * Get attribute sync cache.
@@ -77,12 +76,26 @@ abstract class AbstractAdapter implements AdapterInterface
                     $this->attr_sync_cache = (int) $value;
 
                 break;
+                case 'identity_attribute':
+                    $this->identity_attribute = (int) $value;
+
+                break;
                 default:
-                    throw new Exception('unknown option '.$option.' given');
+                    throw new InvalidArgumentException('unknown option '.$option.' given');
             }
         }
 
         return $this;
+    }
+
+    /**
+     * Get identifier.
+     *
+     * @return string
+     */
+    public function getIdentityAttribute(): string
+    {
+        return $this->identity_attribute;
     }
 
     /**

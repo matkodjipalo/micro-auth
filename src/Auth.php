@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Micro\Auth;
 
+use InvalidArgumentException;
 use Micro\Auth\Adapter\AdapterInterface;
 use Psr\Log\LoggerInterface;
 
@@ -90,7 +91,7 @@ class Auth
 
                 break;
                 default:
-                    throw new Exception('invalid option '.$option.' given');
+                    throw new InvalidArgumentException('invalid option '.$option.' given');
             }
         }
 
@@ -126,7 +127,7 @@ class Auth
         ]);
 
         if ($this->hasAdapter($name)) {
-            throw new Exception('auth adapter '.$name.' is already registered');
+            throw new Exception\AdapterNotUnique('auth adapter '.$name.' is already registered');
         }
 
         $this->adapter[$name] = $adapter;
@@ -144,7 +145,7 @@ class Auth
     public function getAdapter(string $name): AdapterInterface
     {
         if (!$this->hasAdapter($name)) {
-            throw new Exception('auth adapter '.$name.' is not registered');
+            throw new Exception\AdapterNotFound('auth adapter '.$name.' is not registered');
         }
 
         return $this->adapter[$name];
@@ -163,7 +164,7 @@ class Auth
         $list = [];
         foreach ($adapter as $name) {
             if (!$this->hasAdapter($name)) {
-                throw new Exception('auth adapter '.$name.' is not registered');
+                throw new Exception\AdapterNotFound('auth adapter '.$name.' is not registered');
             }
             $list[$name] = $this->adapter[$name];
         }
@@ -219,7 +220,7 @@ class Auth
     public function getIdentity(): IdentityInterface
     {
         if (!$this->isAuthenticated()) {
-            throw new Exception('no valid authentication yet');
+            throw new Exception\NotAuthenticated('no valid authentication yet');
         }
 
         return $this->identity;

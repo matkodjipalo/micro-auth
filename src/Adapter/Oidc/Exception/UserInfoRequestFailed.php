@@ -9,8 +9,8 @@ declare(strict_types=1);
  * @license     MIT https://opensource.org/licenses/MIT
  */
 
-namespace Micro\Auth\Ldap;
+namespace Micro\Auth\Adapter\Oidc\Exception;
 
-class Exception extends \Exception
+class UserInfoRequestFailed extends \Exception
 {
 }

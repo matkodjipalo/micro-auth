@@ -98,7 +98,7 @@ class Ldap
         ]);
 
         if (null === $this->binddn) {
-            $this->logger->warning('no binddn set for ldap connection, anonymous bind should be avoided', [
+            $this->logger->warning('no binddn set for ldap connection, you should avoid anonymous bind', [
                 'category' => get_class($this),
             ]);
         }
@@ -121,13 +121,13 @@ class Ldap
 
         if ($this->connection) {
             if (null !== $this->binddn) {
-                $this->logger->debug('bind to ldap server with binddn ['.$this->binddn.']', [
-                    'category' => get_class($this),
-                ]);
-
                 $bind = ldap_bind($this->connection, $this->binddn, $this->bindpw);
 
                 if ($bind) {
+                    $this->logger->info('bind to ldap server ['.$this->uri.'] with binddn ['.$this->binddn.'] was succesful', [
+                        'category' => get_class($this),
+                    ]);
+
                     return $this;
                 }
 

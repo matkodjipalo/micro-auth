@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Micro\Auth\Adapter;
 
+use Micro\Auth\Adapter\Oidc\Exception as OidcException;
 use Micro\Auth\Exception;
 use Psr\Log\LoggerInterface;
 
@@ -36,18 +37,18 @@ class Oidc extends AbstractAdapter
     protected $token_validation_url;
 
     /**
-     * Identity attribute.
-     *
-     * @var string
-     */
-    protected $identity_attribute = 'preferred_username';
-
-    /**
      * Attributes.
      *
      * @var array
      */
     protected $attributes = [];
+
+    /**
+     * LoggerInterface.
+     *
+     * @var LoggerInterface
+     */
+    protected $logger;
 
     /**
      * Access token.
@@ -65,6 +66,7 @@ class Oidc extends AbstractAdapter
     public function __construct(LoggerInterface $logger, ?Iterable $config = null)
     {
         $this->logger = $logger;
+        $this->identity_attribute = 'preferred_username';
         $this->setOptions($config);
     }
 
@@ -85,7 +87,6 @@ class Oidc extends AbstractAdapter
             switch ($option) {
                 case 'provider_url':
                 case 'token_validation_url':
-                case 'identity_attribute':
                     $this->{$option} = (string) $value;
                     unset($config[$option]);
 
@@ -177,7 +178,7 @@ class Oidc extends AbstractAdapter
                     'category' => get_class($this),
                 ]);
 
-        throw new Exception('failed to get openid-connect discovery document');
+        throw new OidcException\DiscoveryNotFound('failed to get openid-connect discovery document');
     }
 
     /**
@@ -193,7 +194,7 @@ class Oidc extends AbstractAdapter
 
         $discovery = $this->getDiscoveryDocument();
         if (!(isset($discovery['authorization_endpoint']))) {
-            throw new Exception('authorization_endpoint could not be determained');
+            throw new OidcException\AuthorizationEndpointNotSet('authorization_endpoint could not be determained');
         }
 
         $this->logger->debug('fetch user attributes from userinfo_endpoint ['.$discovery['userinfo_endpoint'].']', [
@@ -221,7 +222,7 @@ class Oidc extends AbstractAdapter
                'category' => get_class($this),
             ]);
 
-        throw new Exception('failed requesting user attribute from userinfo_endpoint');
+        throw new OidcException\UserInfoRequestFailed('failed requesting user attribute from userinfo_endpoint');
     }
 
     /**
@@ -242,7 +243,7 @@ class Oidc extends AbstractAdapter
         } else {
             $discovery = $this->getDiscoveryDocument();
             if (!(isset($discovery['userinfo_endpoint']))) {
-                throw new Exception('userinfo_endpoint could not be determained');
+                throw new OidcException\UserEndpointNotSet('userinfo_endpoint could not be determained');
             }
 
             $this->logger->debug('validate token via openid-connect userinfo_endpoint ['.$discovery['userinfo_endpoint'].']', [
@@ -267,10 +268,10 @@ class Oidc extends AbstractAdapter
             ]);
 
             if (!isset($attributes[$this->identity_attribute])) {
-                throw new Exception('identity attribute '.$this->identity_attribute.' not found in oauth2 response');
+                throw new Exception\IdentityAttributeNotFound('identity attribute '.$this->identity_attribute.' not found in oauth2 response');
             }
 
-            $this->identifier = $attributes['preferred_username'];
+            $this->identifier = $attributes[$this->identity_attribute];
 
             if ($this->token_validation_url) {
                 $this->attributes = $attributes;
@@ -284,6 +285,6 @@ class Oidc extends AbstractAdapter
                'category' => get_class($this),
             ]);
 
-        throw new Exception('failed verify oauth2 access token via authorization server');
+        throw new OidcException\InvalidAccessToken('failed verify oauth2 access token via authorization server');
     }
 }

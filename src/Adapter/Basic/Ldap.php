@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Micro\Auth\Adapter\Basic;
 
 use Micro\Auth\Adapter\AdapterInterface;
+use Micro\Auth\Exception;
 use Micro\Auth\Ldap as LdapServer;
 use Psr\Log\LoggerInterface;
 
@@ -32,11 +33,18 @@ class Ldap extends AbstractBasic
     protected $ldap_dn;
 
     /**
-     * my account filter.
+     * Account filter.
      *
      * @var string
      */
     protected $account_filter = '(uid=%s)';
+
+    /**
+     * Logger.
+     *
+     * @var LoggerInterface
+     */
+    protected $logger;
 
     /**
      * Init.
@@ -47,7 +55,7 @@ class Ldap extends AbstractBasic
      */
     public function __construct(LdapServer $ldap, LoggerInterface $logger, ?Iterable $config = null)
     {
-        $this->logger = $logger;
+        parent::__construct($logger);
         $this->ldap = $ldap;
         $this->setOptions($config);
     }
@@ -95,7 +103,7 @@ class Ldap extends AbstractBasic
 
         $esc_username = ldap_escape($username);
         $filter = htmlspecialchars_decode(sprintf($this->account_filter, $esc_username));
-        $result = ldap_search($resource, $this->ldap->getBase(), $filter, ['dn']);
+        $result = ldap_search($resource, $this->ldap->getBase(), $filter, ['dn', $this->identity_attribute]);
         $entries = ldap_get_entries($resource, $result);
 
         if (0 === $entries['count']) {
@@ -128,7 +136,11 @@ class Ldap extends AbstractBasic
             return false;
         }
 
-        $this->identifier = $username;
+        if (!isset($entries[0][$this->identity_attribute])) {
+            throw new Exception\IdentityAttributeNotFound('identity attribute not found');
+        }
+
+        $this->identifier = $entries[0][$this->identity_attribute][0];
         $this->ldap_dn = $dn;
 
         return true;
@@ -141,11 +153,7 @@ class Ldap extends AbstractBasic
      */
     public function getAttributes(): array
     {
-        $search = [];
-        foreach ($this->map as $attr => $value) {
-            $search[] = $value['attr'];
-        }
-
+        $search = array_column($this->map, 'attr');
         $result = ldap_read($this->ldap->getResource(), $this->ldap_dn, '(objectClass=*)', $search);
         $entries = ldap_get_entries($this->ldap->getResource(), $result);
         $attributes = $entries[0];

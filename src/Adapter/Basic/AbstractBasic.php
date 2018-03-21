@@ -12,15 +12,33 @@ declare(strict_types=1);
 namespace Micro\Auth\Adapter\Basic;
 
 use Micro\Auth\Adapter\AbstractAdapter;
+use Psr\Log\LoggerInterface;
 
 abstract class AbstractBasic extends AbstractAdapter implements BasicInterface
 {
+    /**
+     * Logger.
+     *
+     * @var LoggerInterface
+     */
+    protected $logger;
+
     /**
      * Attributes.
      *
      * @var array
      */
     protected $attributes = [];
+
+    /**
+     * Init.
+     *
+     * @param LoggerInterface $logger
+     */
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
 
     /**
      * Authenticate.
