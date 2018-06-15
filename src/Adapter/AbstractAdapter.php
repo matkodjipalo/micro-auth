@@ -77,7 +77,7 @@ abstract class AbstractAdapter implements AdapterInterface
 
                 break;
                 case 'identity_attribute':
-                    $this->identity_attribute = (int) $value;
+                    $this->identity_attribute = $value;
 
                 break;
                 default:

@@ -84,12 +84,6 @@ class Auth
                     $this->{$option} = (string) $value;
 
                 break;
-                case 'adapter':
-                    foreach ($value as $name => $adapter) {
-                        $this->injectAdapter($adapter, $name);
-                    }
-
-                break;
                 default:
                     throw new InvalidArgumentException('invalid option '.$option.' given');
             }
