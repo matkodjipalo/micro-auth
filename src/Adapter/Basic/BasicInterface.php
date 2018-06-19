@@ -18,8 +18,6 @@ interface BasicInterface extends AdapterInterface
     /**
      * Plain authentication using username and password.
      *
-     * @param string $username
-     * @param string $password
      *
      * @return bool
      */

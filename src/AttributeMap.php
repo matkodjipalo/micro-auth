@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Micro\Auth;
 
 use Closure;
-use Psr\Log\LoggerInterface as Logger;
+use Psr\Log\LoggerInterface;
 
 class AttributeMap implements AttributeMapInterface
 {
@@ -40,10 +40,9 @@ class AttributeMap implements AttributeMapInterface
     /**
      * Initialize.
      *
-     * @param iterable $map
-     * @param Logger   $logger
+     * @param Logger $logger
      */
-    public function __construct(Iterable $map, Logger $logger)
+    public function __construct(Iterable $map, LoggerInterface $logger)
     {
         $this->logger = $logger;
         $this->map = $map;

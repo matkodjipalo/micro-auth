@@ -11,34 +11,23 @@ declare(strict_types=1);
 
 namespace Micro\Auth\Adapter;
 
+use Micro\Auth\IdentityInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
 class None extends AbstractAdapter
 {
     /**
      * Authenticate.
-     *
-     * @return bool
      */
-    public function authenticate(): bool
+    public function authenticate(ServerRequestInterface $request): ?array
     {
-        return true;
-    }
-
-    /**
-     * Get identifier.
-     *
-     * @return string
-     */
-    public function getIdentifier(): string
-    {
-        return '';
+        return [];
     }
 
     /**
      * Get attributes.
-     *
-     * @return array
      */
-    public function getAttributes(): array
+    public function getAttributes(IdentityInterface $identity): array
     {
         return [];
     }

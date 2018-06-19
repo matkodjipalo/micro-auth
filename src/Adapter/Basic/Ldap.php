@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace Micro\Auth\Adapter\Basic;
 
+use Dreamscapes\Ldap\Core\Ldap as LdapServer;
 use Micro\Auth\Adapter\AdapterInterface;
-use Micro\Auth\Exception;
-use Micro\Auth\Ldap as LdapServer;
+use Micro\Auth\IdentityInterface;
 use Psr\Log\LoggerInterface;
 
 class Ldap extends AbstractBasic
@@ -24,13 +24,6 @@ class Ldap extends AbstractBasic
      * @var LdapServer
      */
     protected $ldap;
-
-    /**
-     * LDAP DN.
-     *
-     * @var string
-     */
-    protected $ldap_dn;
 
     /**
      * Account filter.
@@ -47,27 +40,103 @@ class Ldap extends AbstractBasic
     protected $logger;
 
     /**
-     * Init.
+     * Uri.
      *
-     * @param LdapServer      $ldap
-     * @param LoggerInterface $logger
-     * @param iterable        $config
+     * @var string
      */
-    public function __construct(LdapServer $ldap, LoggerInterface $logger, ?Iterable $config = null)
+    protected $uri = 'ldap://127.0.0.1:389';
+
+    /**
+     * Binddn.
+     *
+     * @var string
+     */
+    protected $binddn;
+
+    /**
+     * Bindpw.
+     *
+     * @var string
+     */
+    protected $bindpw;
+
+    /**
+     * Basedn.
+     *
+     * @var string
+     */
+    protected $basedn = '';
+
+    /**
+     * tls.
+     *
+     * @var bool
+     */
+    protected $tls = false;
+
+    /**
+     *  Options.
+     *
+     * @var array
+     */
+    protected $options = [];
+
+    /**
+     * Init.
+     */
+    public function __construct(LdapServer $ldap, LoggerInterface $logger, ?Iterable $config = null, ?Iterable $ldap_options = null)
     {
         parent::__construct($logger);
         $this->ldap = $ldap;
+        $this->setLdapOptions($ldap_options);
         $this->setOptions($config);
+        $this->setup();
     }
 
     /**
-     * Set options.
-     *
-     * @param iterable $config
-     *
-     * @return AdapterInterface
+     * {@inheritdoc}
      */
-    public function setOptions(? Iterable $config = null): AdapterInterface
+    protected function setup(): AdapterInterface
+    {
+        $this->logger->debug('connect to ldap server ['.$this->uri.']', [
+            'category' => get_class($this),
+        ]);
+
+        if (null === $this->binddn) {
+            $this->logger->warning('no binddn set for ldap connection, you should avoid anonymous bind', [
+                'category' => get_class($this),
+            ]);
+        }
+
+        if (false === $this->tls && 'ldaps' !== substr($this->uri, 0, 5)) {
+            $this->logger->warning('neither tls nor ldaps enabled for ldap connection, it is strongly reccommended to encrypt ldap connections', [
+                'category' => get_class($this),
+            ]);
+        }
+
+        $this->ldap->connect($this->uri);
+
+        foreach ($this->options as $opt => $value) {
+            $this->ldap->setOption(constant($opt), $value);
+        }
+
+        if (true === $this->tls) {
+            $this->ldap->startTls();
+        }
+
+        $this->logger->info('bind to ldap server ['.$this->uri.'] with binddn ['.$this->binddn.']', [
+            'category' => get_class($this),
+        ]);
+
+        $this->ldap->bind($this->binddn, $this->bindpw);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setOptions(?Iterable $config = null): AdapterInterface
     {
         if (null === $config) {
             return $this;
@@ -76,10 +145,10 @@ class Ldap extends AbstractBasic
         foreach ($config as $option => $value) {
             switch ($option) {
                 case 'account_filter':
-                    $this->account_filter = $value;
+                    $this->{$option} = $value;
                     unset($config[$option]);
 
-                break;
+                    break;
             }
         }
 
@@ -89,73 +158,104 @@ class Ldap extends AbstractBasic
     }
 
     /**
+     * Set ldap options.
+     */
+    public function setLdapOptions(?Iterable $config = null): AdapterInterface
+    {
+        if (null === $config) {
+            return $this;
+        }
+
+        foreach ($config as $option => $value) {
+            switch ($option) {
+                case 'options':
+                    $this->options = $value;
+                    unset($config[$option]);
+
+                    break;
+                case 'uri':
+                case 'binddn':
+                case 'bindpw':
+                case 'basedn':
+                case 'account_filter':
+                    $this->{$option} = (string) $value;
+                    unset($config[$option]);
+
+                    break;
+                case 'tls':
+                    $this->tls = (bool) $value;
+                    unset($config[$option]);
+
+                    break;
+                default:
+                    throw new InvalidArgumentException('invalid ldap option '.$option.' given');
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * LDAP Auth.
-     *
-     * @param string $username
-     * @param string $password
-     *
-     * @return bool
      */
     public function plainAuth(string $username, string $password): bool
     {
         $this->ldap->connect();
         $resource = $this->ldap->getResource();
 
+        $search[] = 'dn';
+        $search[] = $this->identity_attribute;
+
         $esc_username = ldap_escape($username);
         $filter = htmlspecialchars_decode(sprintf($this->account_filter, $esc_username));
-        $result = ldap_search($resource, $this->ldap->getBase(), $filter, ['dn', $this->identity_attribute]);
-        $entries = ldap_get_entries($resource, $result);
+        $result = $this->ldap->ldapSearch($this->basedn, $filter, ['dn', $this->identity_attribute]);
 
-        if (0 === $entries['count']) {
+        if (0 === $result->count()) {
             $this->logger->warning("user not found with ldap filter [{$filter}]", [
                 'category' => get_class($this),
             ]);
 
-            return false;
+            return null;
         }
-        if ($entries['count'] > 1) {
+        if ($result->count() > 1) {
             $this->logger->warning("more than one user found with ldap filter [{$filter}]", [
                 'category' => get_class($this),
             ]);
 
-            return false;
+            return null;
         }
+
+        $entries = $result->getEntries();
 
         $dn = $entries[0]['dn'];
         $this->logger->info("found ldap user [{$dn}] with filter [{$filter}]", [
             'category' => get_class($this),
         ]);
 
-        $result = ldap_bind($resource, $dn, $password);
+        $result = $this->ldap->bind($dn, $password);
+
         $this->logger->info("bind ldap user [{$dn}]", [
             'category' => get_class($this),
             'result' => $result,
         ]);
 
         if (false === $result) {
-            return false;
+            return null;
         }
 
-        if (!isset($entries[0][$this->identity_attribute])) {
-            throw new Exception\IdentityAttributeNotFound('identity attribute not found');
-        }
-
-        $this->identifier = $entries[0][$this->identity_attribute][0];
-        $this->ldap_dn = $dn;
-
-        return true;
+        return $entries[0];
     }
 
     /**
      * Get attributes.
-     *
-     * @return array
      */
-    public function getAttributes(): array
+    public function getAttributes(IdentityInterface $identity): array
     {
         $search = array_column($this->map, 'attr');
-        $result = ldap_read($this->ldap->getResource(), $this->ldap_dn, '(objectClass=*)', $search);
-        $entries = ldap_get_entries($this->ldap->getResource(), $result);
+        $filter = htmlspecialchars_decode(sprintf($this->identity_attribute.'=%s)', $identity->getIdentity()));
+        $result = $this->ldap->ldapSearch($this->basedn, $filter, $search);
+
+        $entries = $result->getEntries();
         $attributes = $entries[0];
 
         $this->logger->info("get ldap user [{$this->ldap_dn}] attributes", [

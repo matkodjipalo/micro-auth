@@ -12,17 +12,9 @@ declare(strict_types=1);
 namespace Micro\Auth;
 
 use Micro\Auth\Adapter\AdapterInterface;
-use Psr\Log\LoggerInterface as Logger;
 
 class Identity implements IdentityInterface
 {
-    /**
-     * Logger.
-     *
-     * @var Logger
-     */
-    protected $logger;
-
     /**
      * Attribute map.
      *
@@ -38,16 +30,19 @@ class Identity implements IdentityInterface
     protected $adapter;
 
     /**
-     * Initialize.
+     * Identity.
      *
-     * @param AdapterInterface $adapter
-     * @param AttributeMap     $map
-     * @param Logger           $logger
+     * @var string
      */
-    public function __construct(AdapterInterface $adapter, AttributeMap $map, Logger $logger)
+    protected $identity;
+
+    /**
+     * Initialize.
+     */
+    public function __construct(AdapterInterface $adapter, string $identity, AttributeMap $map)
     {
+        $this->identity = $identity;
         $this->attribute_map = $map;
-        $this->logger = $logger;
         $this->adapter = $adapter;
     }
 
@@ -72,7 +67,7 @@ class Identity implements IdentityInterface
      */
     public function getIdentifier(): string
     {
-        return $this->adapter->getIdentifier();
+        return $this->identity;
     }
 
     /**
@@ -80,6 +75,6 @@ class Identity implements IdentityInterface
      */
     public function getAttributes(): array
     {
-        return $this->attribute_map->map($this->adapter->getAttributes());
+        return $this->attribute_map->map($this->adapter->getAttributes($this));
     }
 }

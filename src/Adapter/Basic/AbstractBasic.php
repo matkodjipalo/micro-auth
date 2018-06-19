@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Micro\Auth\Adapter\Basic;
 
 use Micro\Auth\Adapter\AbstractAdapter;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 abstract class AbstractBasic extends AbstractAdapter implements BasicInterface
@@ -24,16 +25,7 @@ abstract class AbstractBasic extends AbstractAdapter implements BasicInterface
     protected $logger;
 
     /**
-     * Attributes.
-     *
-     * @var array
-     */
-    protected $attributes = [];
-
-    /**
      * Init.
-     *
-     * @param LoggerInterface $logger
      */
     public function __construct(LoggerInterface $logger)
     {
@@ -42,46 +34,35 @@ abstract class AbstractBasic extends AbstractAdapter implements BasicInterface
 
     /**
      * Authenticate.
-     *
-     * @return bool
      */
-    public function authenticate(): bool
+    public function authenticate(ServerRequestInterface $request): ?array
     {
-        if (!isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $header = $request->getHeader('Authorization');
+
+        if (0 === count($header)) {
             $this->logger->debug('skip auth adapter ['.get_class($this).'], no http authorization header found', [
                 'category' => get_class($this),
             ]);
 
-            return false;
+            return null;
         }
 
-        $header = $_SERVER['HTTP_AUTHORIZATION'];
-        $parts = explode(' ', $header);
+        $parts = explode(' ', $header[0]);
 
         if ('Basic' === $parts[0]) {
             $this->logger->debug('found http basic authorization header', [
                 'category' => get_class($this),
             ]);
 
-            $username = $_SERVER['PHP_AUTH_USER'];
-            $password = $_SERVER['PHP_AUTH_PW'];
+            list($username, $password) = explode(base64_decode($parts[1], true));
 
             return $this->plainAuth($username, $password);
         }
+
         $this->logger->warning('http authorization header contains no basic string or invalid authentication string', [
-                'category' => get_class($this),
-            ]);
+            'category' => get_class($this),
+        ]);
 
-        return false;
-    }
-
-    /**
-     * Get attributes.
-     *
-     * @return array
-     */
-    public function getAttributes(): array
-    {
-        return $this->attributes;
+        return null;
     }
 }

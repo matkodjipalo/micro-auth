@@ -24,22 +24,16 @@ interface IdentityInterface
 
     /**
      * Get adapter.
-     *
-     * @return AdapterInterface
      */
     public function getAdapter(): AdapterInterface;
 
     /**
      * Get identity.
-     *
-     * @return string
      */
     public function getIdentifier(): string;
 
     /**
      * Get identity attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array;
 }

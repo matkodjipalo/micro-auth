@@ -13,6 +13,7 @@ namespace Micro\Auth;
 
 use InvalidArgumentException;
 use Micro\Auth\Adapter\AdapterInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 class Auth
@@ -23,13 +24,6 @@ class Auth
      * @var array
      */
     protected $adapter = [];
-
-    /**
-     * Identity.
-     *
-     * @var IdentityInterface
-     */
-    protected $identity;
 
     /**
      * Logger.
@@ -55,8 +49,7 @@ class Auth
     /**
      * Initialize.
      *
-     * @param LoggerInterface $logger
-     * @param iterable        $config
+     * @param iterable $config
      */
     public function __construct(LoggerInterface $logger, ? Iterable $config = null)
     {
@@ -94,10 +87,6 @@ class Auth
 
     /**
      * Check if adapter is injected.
-     *
-     * @param string $name
-     *
-     * @return bool
      */
     public function hasAdapter(string $name): bool
     {
@@ -107,8 +96,7 @@ class Auth
     /**
      * Inject auth adapter.
      *
-     * @param AdapterInterface $adapter
-     * @param string           $name
+     * @param string $name
      */
     public function injectAdapter(AdapterInterface $adapter, ?string $name = null): self
     {
@@ -131,10 +119,6 @@ class Auth
 
     /**
      * Get adapter.
-     *
-     * @param string $name
-     *
-     * @return AdapterInterface
      */
     public function getAdapter(string $name): AdapterInterface
     {
@@ -168,24 +152,21 @@ class Auth
 
     /**
      * Authenticate.
-     *
-     * @return bool
      */
-    public function requireOne(): bool
+    public function requireOne(ServerRequestInterface $request): ?IdentityInterface
     {
         $result = false;
 
         foreach ($this->adapter as $name => $adapter) {
             try {
-                if ($adapter->authenticate()) {
-                    $this->createIdentity($adapter);
+                if ($attributes = $adapter->authenticate($request)) {
+                    $id = $this->createIdentity($adapter, $attributes);
 
-                    $this->logger->info("identity [{$this->identity->getIdentifier()}] authenticated over adapter [{$name}]", [
+                    $this->logger->info("identity [{$id->getIdentifier()}] authenticated over adapter [{$name}]", [
                         'category' => get_class($this),
                     ]);
-                    $_SERVER['REMOTE_USER'] = $this->identity->getIdentifier();
 
-                    return true;
+                    return $id;
                 }
             } catch (\Exception $e) {
                 $this->logger->error('failed authenticate user, unexcepted exception was thrown', [
@@ -199,49 +180,24 @@ class Auth
             ]);
         }
 
-        $this->logger->warning('all authentication adapter have failed', [
+        /*$this->logger->warning('all authentication adapter have failed', [
             'category' => get_class($this),
-        ]);
+        ]);*/
 
-        return false;
-    }
-
-    /**
-     * Get identity.
-     *
-     * @return IdentityInterface
-     */
-    public function getIdentity(): IdentityInterface
-    {
-        if (!$this->isAuthenticated()) {
-            throw new Exception\NotAuthenticated('no valid authentication yet');
-        }
-
-        return $this->identity;
-    }
-
-    /**
-     * Check if valid identity exists.
-     *
-     * @return bool
-     */
-    public function isAuthenticated(): bool
-    {
-        return $this->identity instanceof Identity;
+        throw new Exception\NotAuthenticated('all authentication adapter have failed');
     }
 
     /**
      * Create identity.
-     *
-     * @param AdapterInterface $adapter
-     *
-     * @return IdentityInterface
      */
-    protected function createIdentity(AdapterInterface $adapter): IdentityInterface
+    protected function createIdentity(AdapterInterface $adapter, array $attributes): IdentityInterface
     {
-        $map = new $this->attribute_map_class($adapter->getAttributeMap(), $this->logger);
-        $this->identity = new $this->identity_class($adapter, $map, $this->logger);
+        if (!isset($attributes[$adapter->getIdentityAttribute()])) {
+            throw new Exception\IdentityAttributeNotFound('identity attribute not found');
+        }
 
-        return $this->identity;
+        $map = new $this->attribute_map_class($adapter->getAttributeMap(), $this->logger);
+
+        return new $this->identity_class($adapter, $attributes[$adapter->getIdentityAttribute()], $map);
     }
 }

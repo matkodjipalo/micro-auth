@@ -12,7 +12,8 @@ declare(strict_types=1);
 namespace Micro\Auth\Adapter;
 
 use Micro\Auth\Adapter\Oidc\Exception as OidcException;
-use Micro\Auth\Exception;
+use Micro\Auth\IdentityInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 class Oidc extends AbstractAdapter
@@ -37,13 +38,6 @@ class Oidc extends AbstractAdapter
     protected $token_validation_url;
 
     /**
-     * Attributes.
-     *
-     * @var array
-     */
-    protected $attributes = [];
-
-    /**
      * LoggerInterface.
      *
      * @var LoggerInterface
@@ -51,17 +45,9 @@ class Oidc extends AbstractAdapter
     protected $logger;
 
     /**
-     * Access token.
-     *
-     * @var string
-     */
-    private $access_token;
-
-    /**
      * Init adapter.
      *
-     * @param LoggerInterface $logger
-     * @param iterable        $config
+     * @param iterable $config
      */
     public function __construct(LoggerInterface $logger, ?Iterable $config = null)
     {
@@ -74,8 +60,6 @@ class Oidc extends AbstractAdapter
      * Set options.
      *
      * @param iterable $config
-     *
-     * @return AdapterInterface
      */
     public function setOptions(? Iterable $config = null): AdapterInterface
     {
@@ -94,25 +78,25 @@ class Oidc extends AbstractAdapter
             }
         }
 
-        return  parent::setOptions($config);
+        return parent::setOptions($config);
     }
 
     /**
      * Authenticate.
-     *
-     * @return bool
      */
-    public function authenticate(): bool
+    public function authenticate(ServerRequestInterface $request): ?array
     {
-        if (!isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $header = $request->getHeader('Authorization');
+
+        if (0 === count($header)) {
             $this->logger->debug('skip auth adapter ['.get_class($this).'], no http authorization header or access_token param found', [
                 'category' => get_class($this),
             ]);
 
-            return false;
+            return null;
         }
-        $header = $_SERVER['HTTP_AUTHORIZATION'];
-        $parts = explode(' ', $header);
+
+        $parts = explode(' ', $header[0]);
 
         if ('Bearer' === $parts[0]) {
             $this->logger->debug('found http bearer authorization header', [
@@ -121,17 +105,16 @@ class Oidc extends AbstractAdapter
 
             return $this->verifyToken($parts[1]);
         }
+
         $this->logger->debug('http authorization header contains no bearer string or invalid authentication string', [
                     'category' => get_class($this),
                 ]);
 
-        return false;
+        return null;
     }
 
     /**
      * Get discovery url.
-     *
-     * @return string
      */
     public function getDiscoveryUrl(): string
     {
@@ -140,14 +123,13 @@ class Oidc extends AbstractAdapter
 
     /**
      * Get discovery document.
-     *
-     * @return array
      */
     public function getDiscoveryDocument(): array
     {
         if ($apc = extension_loaded('apc') && apc_exists($this->provider_url)) {
             return apc_get($this->provider_url);
         }
+
         $ch = curl_init();
         $url = $this->getDiscoveryUrl();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -174,6 +156,7 @@ class Oidc extends AbstractAdapter
 
             return $discovery;
         }
+
         $this->logger->error('failed to receive openid-connect discovery document from ['.$url.'], request ended with status ['.$code.']', [
                     'category' => get_class($this),
                 ]);
@@ -183,15 +166,9 @@ class Oidc extends AbstractAdapter
 
     /**
      * Get attributes.
-     *
-     * @return array
      */
-    public function getAttributes(): array
+    public function getAttributes(IdentityInterface $identity): array
     {
-        if (0 !== count($this->attributes)) {
-            return $this->attributes;
-        }
-
         $discovery = $this->getDiscoveryDocument();
         if (!(isset($discovery['authorization_endpoint']))) {
             throw new OidcException\AuthorizationEndpointNotSet('authorization_endpoint could not be determained');
@@ -216,7 +193,7 @@ class Oidc extends AbstractAdapter
                'category' => get_class($this),
             ]);
 
-            return $this->attributes = $attributes;
+            return $attributes;
         }
         $this->logger->error('failed requesting user attributes from userinfo_endpoint, status code ['.$code.']', [
                'category' => get_class($this),
@@ -227,12 +204,8 @@ class Oidc extends AbstractAdapter
 
     /**
      * Token verification.
-     *
-     * @param string $token
-     *
-     * @return bool
      */
-    protected function verifyToken(string $token): bool
+    protected function verifyToken(string $token): ?array
     {
         if ($this->token_validation_url) {
             $this->logger->debug('validate oauth2 token via rfc7662 token validation endpoint ['.$this->token_validation_url.']', [
@@ -267,20 +240,9 @@ class Oidc extends AbstractAdapter
                'category' => get_class($this),
             ]);
 
-            if (!isset($attributes[$this->identity_attribute])) {
-                throw new Exception\IdentityAttributeNotFound('identity attribute '.$this->identity_attribute.' not found in oauth2 response');
-            }
-
-            $this->identifier = $attributes[$this->identity_attribute];
-
-            if ($this->token_validation_url) {
-                $this->attributes = $attributes;
-            } else {
-                $this->access_token = $token;
-            }
-
-            return true;
+            return $attribtues;
         }
+
         $this->logger->error('failed verify oauth2 access token via authorization server, received status ['.$code.']', [
                'category' => get_class($this),
             ]);

@@ -17,25 +17,16 @@ interface AttributeMapInterface
 {
     /**
      * Get attribute map.
-     *
-     * @return iterable
      */
     public function getAttributeMap(): Iterable;
 
     /**
      * Add custom mapper.
-     *
-     * @param string  $type
-     * @param Closure $closure
      */
     public function addMapper(string $type, Closure $closure): self;
 
     /**
      * Prepare attributes.
-     *
-     * @param array $data
-     *
-     * @return array
      */
     public function map(array $data): array;
 }

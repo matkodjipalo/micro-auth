@@ -23,13 +23,6 @@ abstract class AbstractAdapter implements AdapterInterface
     protected $identifier;
 
     /**
-     * attribute sync cache.
-     *
-     * @var int
-     */
-    protected $attr_sync_cache = 0;
-
-    /**
      * attribute map.
      *
      * @var iterable
@@ -44,21 +37,9 @@ abstract class AbstractAdapter implements AdapterInterface
     protected $identity_attribute = 'uid';
 
     /**
-     * Get attribute sync cache.
-     *
-     * @return int
-     */
-    public function getAttributeSyncCache(): int
-    {
-        return $this->attr_sync_cache;
-    }
-
-    /**
      * Set options.
      *
      * @param iterable $config
-     *
-     * @return AdapterInterface
      */
     public function setOptions(? Iterable $config = null): AdapterInterface
     {
@@ -70,10 +51,6 @@ abstract class AbstractAdapter implements AdapterInterface
             switch ($option) {
                 case 'map':
                     $this->map = $value;
-
-                break;
-                case 'attr_sync_cache':
-                    $this->attr_sync_cache = (int) $value;
 
                 break;
                 case 'identity_attribute':
@@ -90,8 +67,6 @@ abstract class AbstractAdapter implements AdapterInterface
 
     /**
      * Get identifier.
-     *
-     * @return string
      */
     public function getIdentityAttribute(): string
     {
@@ -99,19 +74,7 @@ abstract class AbstractAdapter implements AdapterInterface
     }
 
     /**
-     * Get identifier.
-     *
-     * @return string
-     */
-    public function getIdentifier(): string
-    {
-        return $this->identifier;
-    }
-
-    /**
      * Get attribute map.
-     *
-     * @return iterable
      */
     public function getAttributeMap(): Iterable
     {
