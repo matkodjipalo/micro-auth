@@ -121,6 +121,15 @@ class Oidc extends AbstractAdapter
 
             return $this->verifyToken($parts[1]);
         }
+
+        if (isset($_GET['access_token'])) {
+            $this->logger->warning('found access_token in query string, you should use a bearer token instead due security reasons https://tools.ietf.org/html/rfc6750#section-2.3', [
+                'category' => get_class($this),
+            ]);
+
+            return $this->verifyToken($_GET['access_token']);
+        }
+
         $this->logger->debug('http authorization header contains no bearer string or invalid authentication string', [
                     'category' => get_class($this),
                 ]);
