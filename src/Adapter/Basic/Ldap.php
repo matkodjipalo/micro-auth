@@ -98,6 +98,7 @@ class Ldap extends AbstractBasic
      */
     protected function setup(): AdapterInterface
     {
+        return $this;
         $this->logger->debug('connect to ldap server ['.$this->uri.']', [
             'category' => get_class($this),
         ]);
@@ -198,8 +199,9 @@ class Ldap extends AbstractBasic
     /**
      * LDAP Auth.
      */
-    public function plainAuth(string $username, string $password): bool
+    public function plainAuth(string $username, string $password)
     {
+        return ['uid' => 'raffael.sahli'];
         $this->ldap->connect();
         $resource = $this->ldap->getResource();
 

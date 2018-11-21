@@ -54,7 +54,7 @@ abstract class AbstractBasic extends AbstractAdapter implements BasicInterface
                 'category' => get_class($this),
             ]);
 
-            list($username, $password) = explode(base64_decode($parts[1], true));
+            list($username, $password) = explode(':', base64_decode($parts[1], true));
 
             return $this->plainAuth($username, $password);
         }
