@@ -51,7 +51,7 @@ class Auth
      *
      * @param iterable $config
      */
-    public function __construct(LoggerInterface $logger, ? Iterable $config = null)
+    public function __construct(LoggerInterface $logger, ?array $config = null)
     {
         $this->logger = $logger;
         $this->setOptions($config);
@@ -59,12 +59,8 @@ class Auth
 
     /**
      * Set options.
-     *
-     * @param iterable $config
-     *
-     * @return Auth
      */
-    public function setOptions(? Iterable $config = null): self
+    public function setOptions(?array $config = null): self
     {
         if (null === $config) {
             return $this;
@@ -95,8 +91,6 @@ class Auth
 
     /**
      * Inject auth adapter.
-     *
-     * @param string $name
      */
     public function injectAdapter(AdapterInterface $adapter, ?string $name = null): self
     {
@@ -131,8 +125,6 @@ class Auth
 
     /**
      * Get adapters.
-     *
-     * @return AdapterInterface[]
      */
     public function getAdapters(array $adapters = []): array
     {
@@ -180,10 +172,6 @@ class Auth
             ]);
         }
 
-        /*$this->logger->warning('all authentication adapter have failed', [
-            'category' => get_class($this),
-        ]);*/
-
         throw new Exception\NotAuthenticated('all authentication adapter have failed');
     }
 
@@ -196,8 +184,13 @@ class Auth
             throw new Exception\IdentityAttributeNotFound('identity attribute not found');
         }
 
+        $identity = $attributes[$adapter->getIdentityAttribute()];
+        if (is_array($identity)) {
+            $identity = (string) array_shift($identity);
+        }
+
         $map = new $this->attribute_map_class($adapter->getAttributeMap(), $this->logger);
 
-        return new $this->identity_class($adapter, $attributes[$adapter->getIdentityAttribute()], $map);
+        return new $this->identity_class($adapter, $identity, $map);
     }
 }

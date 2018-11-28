@@ -98,7 +98,6 @@ class Ldap extends AbstractBasic
      */
     protected function setup(): AdapterInterface
     {
-        return $this;
         $this->logger->debug('connect to ldap server ['.$this->uri.']', [
             'category' => get_class($this),
         ]);
@@ -201,10 +200,6 @@ class Ldap extends AbstractBasic
      */
     public function plainAuth(string $username, string $password)
     {
-        return ['uid' => 'raffael.sahli'];
-        $this->ldap->connect();
-        $resource = $this->ldap->getResource();
-
         $search[] = 'dn';
         $search[] = $this->identity_attribute;
 
@@ -212,15 +207,15 @@ class Ldap extends AbstractBasic
         $filter = htmlspecialchars_decode(sprintf($this->account_filter, $esc_username));
         $result = $this->ldap->ldapSearch($this->basedn, $filter, ['dn', $this->identity_attribute]);
 
-        if (0 === $result->count()) {
-            $this->logger->warning("user not found with ldap filter [{$filter}]", [
+        if (0 === $result->countEntries()) {
+            $this->logger->warning("no object found with ldap filter [{$filter}]", [
                 'category' => get_class($this),
             ]);
 
             return null;
         }
-        if ($result->count() > 1) {
-            $this->logger->warning("more than one user found with ldap filter [{$filter}]", [
+        if ($result->countEntries() > 1) {
+            $this->logger->warning("more than one object found with ldap filter [{$filter}]", [
                 'category' => get_class($this),
             ]);
 
@@ -255,12 +250,17 @@ class Ldap extends AbstractBasic
     {
         $search = array_column($this->map, 'attr');
         $filter = htmlspecialchars_decode(sprintf($this->identity_attribute.'=%s)', $identity->getIdentity()));
+
+        $this->logger->debug("fetch ldap object attributes with [$filter]", [
+            'category' => get_class($this),
+        ]);
+
         $result = $this->ldap->ldapSearch($this->basedn, $filter, $search);
 
         $entries = $result->getEntries();
         $attributes = $entries[0];
 
-        $this->logger->info("get ldap user [{$this->ldap_dn}] attributes", [
+        $this->logger->info('received ldap object attributes', [
             'category' => get_class($this),
             'params' => $attributes,
         ]);

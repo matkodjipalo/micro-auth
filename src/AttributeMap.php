@@ -73,7 +73,7 @@ class AttributeMap implements AttributeMapInterface
     {
         $attrs = [];
         foreach ($this->map as $attr => $value) {
-            if (array_key_exists($value['attr'], $data)) {
+            if (isset($data[$value['attr']])) {
                 $this->logger->info('found attribute mapping ['.$attr.'] => [('.$value['type'].') '.$value['attr'].']', [
                     'category' => get_class($this),
                 ]);
@@ -83,7 +83,7 @@ class AttributeMap implements AttributeMapInterface
                 } else {
                     $store = $data[$value['attr']];
                     if (is_array($store)) {
-                        $store = $store[0];
+                        $store = array_shift($store);
                     }
                 }
 
