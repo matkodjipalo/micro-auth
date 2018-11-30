@@ -37,6 +37,14 @@ abstract class AbstractAdapter implements AdapterInterface
     protected $identity_attribute = 'uid';
 
     /**
+     * {@inheritdoc}
+     */
+    public function setup(): AdapterInterface
+    {
+        return $this;
+    }
+
+    /**
      * Set options.
      *
      * @param iterable $config

@@ -17,6 +17,11 @@ use Psr\Http\Message\ServerRequestInterface;
 interface AdapterInterface
 {
     /**
+     * Setup adapter.
+     */
+    public function setup(): AdapterInterface;
+
+    /**
      * Authenticate.
      */
     public function authenticate(ServerRequestInterface $request): ?array;

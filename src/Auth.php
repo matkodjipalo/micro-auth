@@ -151,6 +151,8 @@ class Auth
 
         foreach ($this->adapter as $name => $adapter) {
             try {
+                $adapter->setup();
+
                 if ($attributes = $adapter->authenticate($request)) {
                     $id = $this->createIdentity($adapter, $attributes);
 

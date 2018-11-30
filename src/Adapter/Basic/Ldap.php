@@ -90,13 +90,12 @@ class Ldap extends AbstractBasic
         $this->ldap = $ldap;
         $this->setLdapOptions($ldap_options);
         $this->setOptions($config);
-        $this->setup();
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function setup(): AdapterInterface
+    public function setup(): AdapterInterface
     {
         $this->logger->debug('connect to ldap server ['.$this->uri.']', [
             'category' => get_class($this),
