@@ -104,23 +104,31 @@ class Oidc extends AbstractAdapter
      */
     public function authenticate(): bool
     {
-        if (!isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $this->logger->debug('skip auth adapter ['.get_class($this).'], no http authorization header or access_token param found', [
+        if (isset($_GET['access_token'])) {
+            $this->logger->warning('found access_token in query string, you should use a bearer token instead due security reasons https://tools.ietf.org/html/rfc6750#section-2.3', [
                 'category' => get_class($this),
             ]);
 
-            return false;
+            return $this->verifyToken($_GET['access_token']);
         }
-        $header = $_SERVER['HTTP_AUTHORIZATION'];
-        $parts = explode(' ', $header);
+        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $header = $_SERVER['HTTP_AUTHORIZATION'];
+            $parts = explode(' ', $header);
 
-        if ('Bearer' === $parts[0]) {
-            $this->logger->debug('found http bearer authorization header', [
+            if ('Bearer' === $parts[0]) {
+                $this->logger->debug('found http bearer authorization header', [
                     'category' => get_class($this),
                 ]);
 
-            return $this->verifyToken($parts[1]);
+                return $this->verifyToken($parts[1]);
+            }
+            $this->logger->debug('no bearer token provided', [
+                    'category' => get_class($this),
+                ]);
+
+            return false;
         }
+
         $this->logger->debug('http authorization header contains no bearer string or invalid authentication string', [
                     'category' => get_class($this),
                 ]);
