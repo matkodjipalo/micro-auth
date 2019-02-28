@@ -237,7 +237,7 @@ class Auth
      *
      * @return IdentityInterface
      */
-    protected function createIdentity(AdapterInterface $adapter): IdentityInterface
+    publicc function createIdentity(AdapterInterface $adapter): IdentityInterface
     {
         $map = new $this->attribute_map_class($adapter->getAttributeMap(), $this->logger);
         $this->identity = new $this->identity_class($adapter, $map, $this->logger);
