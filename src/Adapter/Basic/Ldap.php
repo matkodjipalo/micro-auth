@@ -90,12 +90,13 @@ class Ldap extends AbstractBasic
         $this->ldap = $ldap;
         $this->setLdapOptions($ldap_options);
         $this->setOptions($config);
+        $this->setup();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function setup(): AdapterInterface
+    protected function setup(): AdapterInterface
     {
         $this->logger->debug('connect to ldap server ['.$this->uri.']', [
             'category' => get_class($this),
@@ -239,7 +240,7 @@ class Ldap extends AbstractBasic
             return null;
         }
 
-        return $entries[0];
+        return $this->prepareRawObject($entries[0]);
     }
 
     /**
@@ -248,7 +249,7 @@ class Ldap extends AbstractBasic
     public function getAttributes(IdentityInterface $identity): array
     {
         $search = array_column($this->map, 'attr');
-        $filter = htmlspecialchars_decode(sprintf($this->identity_attribute.'=%s)', $identity->getIdentity()));
+        $filter = htmlspecialchars_decode(sprintf($this->identity_attribute.'=%s)', $identity->getIdentifier()));
 
         $this->logger->debug("fetch ldap object attributes with [$filter]", [
             'category' => get_class($this),
@@ -264,6 +265,43 @@ class Ldap extends AbstractBasic
             'params' => $attributes,
         ]);
 
-        return $attributes;
+        return $this->prepareRawObject($attributes);
+    }
+
+    /**
+     * Prepare object.
+     */
+    protected function prepareRawObject(array $result): array
+    {
+        $object = [];
+        foreach ($result as $key => $attr) {
+            if ('count' === $key) {
+                continue;
+            }
+            if ('dn' === $key) {
+                $object['entrydn'] = $attr;
+            } elseif (!is_int($key)) {
+                if (1 === $attr['count']) {
+                    if (preg_match('~[^\x20-\x7E\t\r\n]~', $attr[0]) > 0) {
+                        $object[$key] = base64_encode($attr[0]);
+                    } else {
+                        $object[$key] = $attr[0];
+                    }
+                } else {
+                    $val = $attr;
+                    unset($val['count']);
+
+                    foreach ($val as $v) {
+                        if (preg_match('~[^\x20-\x7E\t\r\n]~', $v) > 0) {
+                            $object[$key][] = base64_encode($v);
+                        } else {
+                            $object[$key][] = $v;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $object;
     }
 }
