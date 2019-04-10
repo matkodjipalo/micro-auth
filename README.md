@@ -97,3 +97,4 @@ if($auth->requireOne()) {
 ```
 
 Given that, you can define an attribute map for each authentication adapter and map all attributes to the same attribute names you would like to use.
+#
