@@ -1,5 +1,5 @@
 {
-    "name": "gyselroth/micro-auth",
+    "name": "gyselroth/micro-auth_matko_fork",
     "description": "Authentication implementation including support for LDAP and OpenID-connet",
     "keywords": ["micro", "ldap", "http-basic", "openid-connect"],
     "homepage": "http://www.github.com/gyselroth/micro-auth",
